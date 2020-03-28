@@ -1,21 +1,50 @@
 import React, { useContext, useState, useEffect } from "react";
 import AuthContext from "../../context/auth/authContext";
+import AlertContext from '../../context/alert/alertContext';
+import alertContext from "../../context/alert/alertContext";
 
-const Login = () => {
+const Login =props => {
   const authContext = useContext(AuthContext);
+  const alertContext = useContext(AlertContext);
 
   const { login, error, clearErrors, isAuthenticated } = authContext;
 
+  useEffect(()=> {
+    if(isAuthenticated){
+      props.history.push('/');
+    }
+
+    if(error === "User already exists"){
+      alertContext.setAlert('User already exists', 'text-center alert-danger');
+      //@ToDo clearErrors
+    }
+
+    //  eslint-disable-next-line
+  }, [error, isAuthenticated, props.history])
+
+
   const [user, setUser] = useState({
-    name: "",
     email: "",
-    password: "",
-    password2: ""
+    password: ""
   });
 
   const { email, password } = user;
 
   const onChange = e => setUser({ ...user, [e.target.name]: e.target.value });
+
+  const onSubmit = e => {
+    e.preventDefault();
+
+    if (email === "" || password === "") {
+      //Set alarm
+      alertContext.setAlert('Enter all fields', 'text-center alert-danger');
+
+    } else{
+      login({
+        email, password
+      })
+    }
+  };
 
   return (
     <div className="form-container">
@@ -23,7 +52,7 @@ const Login = () => {
         Account <span>Login</span>
       </h1>
 
-      <form>
+      <form onSubmit={onSubmit}>
         <div className="form-group">
           <label htmlFor="email">Email Address</label>
           <input type="email" name="email" value={email} onChange={onChange} />
